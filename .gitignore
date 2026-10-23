@@ -1,0 +1,17 @@
+# системные файлы
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+
+# редакторы
+.vscode/
+.idea/
+
+# запасные копии и архивы
+*.zip
+*.bak
+*.tmp

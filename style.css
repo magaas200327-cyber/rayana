@@ -1,0 +1,394 @@
+:root{--bg:#100b14;--panel:#1b111f;--gold:#e8c27a;--cream:#fff6eb;--muted:#c9b9c9}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#39213c 0,#160e1b 48%,#09070d 100%);color:var(--cream);font-family:Georgia,'Times New Roman',serif;min-height:100vh}a{color:inherit;text-decoration:none}.top{display:flex;justify-content:space-between;align-items:center;padding:22px clamp(18px,5vw,70px);font:12px Arial,sans-serif;letter-spacing:2px;color:var(--gold)}.brand{font-weight:bold}main{width:min(960px,92vw);margin:0 auto;min-height:78vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:38px 0 70px}.panel{width:100%;border:1px solid #9e784b55;background:#130d19b8;border-radius:26px;padding:clamp(28px,6vw,70px);box-shadow:0 25px 90px #0007;position:relative;overflow:hidden}.eyebrow{font:11px Arial,sans-serif;letter-spacing:4px;color:var(--gold);text-transform:uppercase}.ornament{color:var(--gold);font-size:35px;margin:20px}.panel h1,.panel h2{font-weight:normal;font-size:clamp(36px,7vw,72px);line-height:1.05;margin:18px 0}.panel h1 em,.panel h2 em{color:var(--gold);font-weight:normal}.copy{color:var(--muted);font:16px/1.8 Arial,sans-serif;max-width:610px;margin:20px auto 30px}.btn{display:inline-flex;align-items:center;gap:20px;padding:16px 24px;border:1px solid var(--gold);border-radius:999px;background:linear-gradient(120deg,#d6ae6c,#f6e3b4);color:#211421;font: bold 13px Arial,sans-serif;cursor:pointer;transition:.2s}.btn:hover{transform:translateY(-2px);box-shadow:0 8px 35px #d6ae6c55}.ghost{background:transparent;color:var(--cream);margin-left:8px}.hint{font:12px/1.7 Arial,sans-serif;color:var(--muted)}.flower{font-size:60px;color:var(--gold);margin:15px}.footer{position:fixed;bottom:0;left:0;right:0;text-align:center;padding:14px;background:linear-gradient(transparent,#09070dee);font:10px Arial,sans-serif;letter-spacing:3px;color:#a58caa}@media(max-width:600px){.top{padding:18px}.panel{padding:28px 18px}.btn{margin:6px}.copy{font-size:14px}}
+
+
+/* Smooth scene transition */
+body{opacity:1;transition:opacity .55s ease,filter .55s ease;overflow-x:hidden}
+.page-enter{animation:pageReveal .8s cubic-bezier(.22,.7,.25,1) both}
+@keyframes pageReveal{from{opacity:0}to{opacity:1}}
+.transition-curtain{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#3c2140 0,#100b14 68%);opacity:0;pointer-events:none;transition:opacity .68s ease}
+.transition-curtain span{color:var(--gold);font-size:clamp(42px,8vw,90px);text-shadow:0 0 45px #e8c27a99;transform:scale(.5) rotate(-35deg);opacity:0}
+.page-leaving{overflow:hidden;opacity:0;filter:blur(7px);transform:scale(1.025)}
+.page-leaving .transition-curtain{opacity:1}
+.page-leaving .transition-curtain span{animation:starBloom .65s ease forwards}
+@keyframes starBloom{50%{opacity:1;transform:scale(1.15) rotate(0)}100%{opacity:0;transform:scale(1.8) rotate(35deg)}}
+.landing-hint{margin-top:17px;margin-bottom:0;font-size:12px}
+.start-btn{min-width:245px;justify-content:center}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+
+/* Full-screen dance background (shared by index.html and message.html) */
+.bg-dance-video{position:fixed;top:calc(50% + 6vh);left:50%;width:200%;height:200%;object-fit:cover;object-position:center;transform:translate(-50%,-50%);transform-origin:center center;z-index:-3;filter:brightness(.48) saturate(.78);}
+.bg-vignette{position:fixed;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(90deg,rgba(9,6,13,.72),rgba(9,6,13,.22) 50%,rgba(9,6,13,.72)),linear-gradient(0deg,rgba(9,6,13,.75),transparent 45%,rgba(9,6,13,.45))}
+@media(max-width:600px){.bg-dance-video{object-position:center}}
+
+/* ==========================================================================
+   Landing screen (index.html) - independent layers, bottom to top:
+     -3  .landing-bg-video     background video (200% x 200%, +6vh, dimmed; rule above)
+     -2  .landing-video-shade  dark overlay on top of the video
+     10  .top / main / .footer page content (real HTML button lives here)
+     11  #introParticles       particle canvas, never intercepts the mouse
+   ========================================================================== */
+.landing-page{
+  position:relative;
+  isolation:isolate;                 /* keeps the z-index:-3 video inside the page */
+  min-height:100vh;min-height:100svh;
+  overflow-x:hidden;overflow-y:auto; /* scrolls only if the window is really too short */
+  background:#050408;
+}
+.landing-page.page-enter{animation:landingPageFade .55s ease both}
+@keyframes landingPageFade{from{opacity:0}to{opacity:1}}
+
+.landing-page .landing-bg-video{max-width:none;pointer-events:none}
+
+.landing-page .landing-video-shade{
+  position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(5,4,8,.72),rgba(5,4,8,.18) 50%,rgba(5,4,8,.72)),
+    linear-gradient(0deg,rgba(5,4,8,.70),rgba(5,4,8,.10) 48%,rgba(5,4,8,.58));
+}
+
+.landing-page .top,
+.landing-page main,
+.landing-page .footer{z-index:10}
+.landing-page .top,
+.landing-page main{position:relative}
+.landing-page .top{text-shadow:0 1px 12px #000}
+.landing-page main{
+  width:min(960px,92vw);
+  min-height:calc(100vh - 58px);min-height:calc(100svh - 58px);
+  margin:0 auto;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:20px 0 56px;
+}
+.landing-page .panel{
+  width:100%;max-width:850px;
+  padding:clamp(26px,5vw,64px);
+  position:relative;overflow:visible;
+  background:rgba(7,5,10,.32);
+  border:1px solid rgba(232,194,122,.20);border-radius:28px;
+  box-shadow:0 20px 80px rgba(0,0,0,.14);
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+}
+.landing-page .eyebrow,
+.landing-page .ornament,
+.landing-page .panel h1,
+.landing-page .copy,
+.landing-page .landing-hint{
+  text-shadow:0 2px 18px rgba(0,0,0,.85);
+  animation:landingTextIn .85s ease both;
+}
+.landing-page .eyebrow{animation-delay:.10s}
+.landing-page .ornament{animation-delay:.22s}
+.landing-page .panel h1{animation-delay:.34s}
+.landing-page .copy{animation-delay:.46s}
+.landing-page .landing-hint{animation-delay:.58s}
+@keyframes landingTextIn{
+  from{opacity:0;transform:translateY(16px);filter:blur(5px)}
+  to{opacity:1;transform:translateY(0);filter:blur(0)}
+}
+.landing-page .panel h1{font-size:clamp(38px,6.5vw,72px);line-height:1.05}
+.landing-page .copy{color:#f2e8f2;max-width:610px}
+
+/* Real <a> button. It is hidden ONLY while the particle intro runs (html.js-intro). */
+.landing-page .start-btn,
+.letter-page .open-btn{
+  position:relative;z-index:12;min-width:245px;justify-content:center;
+  opacity:1;pointer-events:auto;transform:translateY(0) scale(1);filter:none;
+  transition:opacity .9s ease,transform .9s cubic-bezier(.2,.8,.2,1),filter .9s ease,box-shadow .6s ease;
+}
+html.js-intro .landing-page .start-btn:not(.is-visible),
+html.js-intro .letter-page .open-btn:not(.is-visible){
+  opacity:0;pointer-events:none;
+  transform:translateY(14px) scale(.88);filter:blur(8px);
+  /* fail-open: if the script ever dies, the button still shows up by itself */
+  animation:introFailOpen .01s linear 7s forwards;
+}
+@keyframes introFailOpen{to{opacity:1;pointer-events:auto;transform:none;filter:none}}
+.landing-page .start-btn.is-visible,
+.letter-page .open-btn.is-visible{
+  opacity:1;pointer-events:auto;transform:translateY(0) scale(1);filter:blur(0);
+  box-shadow:0 0 26px rgba(232,194,122,.62),0 0 72px rgba(205,160,230,.28);
+  animation:buttonPulse 2.4s ease-in-out 1s 2;
+}
+@keyframes buttonPulse{
+  0%,100%{box-shadow:0 0 24px rgba(232,194,122,.46),0 0 46px rgba(205,160,230,.16)}
+  50%{box-shadow:0 0 36px rgba(255,230,177,.88),0 0 84px rgba(205,160,230,.42)}
+}
+.landing-page .start-btn:hover,
+.letter-page .open-btn.is-visible:not(:disabled):hover{transform:translateY(-2px) scale(1.02)}
+
+/* Particle canvas: above the content, below nothing, transparent to clicks */
+.landing-page #introParticles{
+  position:fixed;inset:0;width:100%;height:100%;z-index:11;
+  display:block;pointer-events:none;opacity:1;
+  transition:opacity 1.2s ease;
+}
+.landing-page #introParticles.is-fading{opacity:0}
+.landing-page #introParticles.is-done{visibility:hidden}
+
+.landing-page .transition-curtain{z-index:50}
+.landing-page .footer{background:linear-gradient(transparent,rgba(5,4,8,.82))}
+/* leaving animation must not put transform/filter on <body> (it would re-anchor the fixed video) */
+.landing-page.page-leaving,
+.letter-page.page-leaving{filter:none;transform:none;overflow:hidden}
+
+@media(max-width:600px){
+  .landing-page .panel{padding:26px 18px;background:rgba(7,5,10,.50)}
+  .landing-page .copy{font-size:14px}
+  .landing-page .start-btn{min-width:220px}
+}
+@media(prefers-reduced-motion:reduce){
+  .landing-page .eyebrow,.landing-page .ornament,.landing-page .panel h1,
+  .landing-page .copy,.landing-page .landing-hint{animation:none}
+  /* the generic reduced-motion rule above squashes every transition to .01ms; keep the button reveal */
+  .landing-page .start-btn,.letter-page .open-btn{transition-duration:.9s!important}
+  .landing-page #introParticles{transition-duration:1.2s!important}
+}
+
+/* Low screens (phone in landscape, small windows): compact panel so the button stays on screen */
+@media(max-height:600px){
+  .landing-page .top{padding-top:10px;padding-bottom:10px}
+  .landing-page main{min-height:calc(100vh - 34px);min-height:calc(100svh - 34px);padding:8px 0 44px}
+  .landing-page .panel{padding:16px clamp(18px,5vw,40px)}
+  .landing-page .ornament,.landing-page .landing-hint{display:none}
+  .landing-page .panel h1{font-size:clamp(24px,7vh,40px);margin:8px 0}
+  .landing-page .copy{font-size:13px;line-height:1.5;margin:8px auto 14px}
+}
+
+
+/* ==========================================================================
+   Letter page (message.html): видео → затемнение → [содержимое z10] → канвас частиц z11 → навигация z12
+   Видео и затемнение берутся из общих правил .bg-dance-video / .bg-vignette выше (те же 200% / +6vh / brightness .48).
+   Кнопка #openLetter использует те же правила, что и кнопка первой страницы (см. общие селекторы выше).
+   ========================================================================== */
+.letter-page{
+  position:relative;isolation:isolate;height:100vh;overflow:hidden;background:#050408;
+  --reserve:112px;                                   /* место под кнопки навигации внизу */
+  --ew:min(440px,80vw);--eh:calc(var(--ew)*.682);    /* размер конверта */
+  --sw:min(580px,92vw);                              /* ширина письма */
+  --stage-h:calc(100vh - 58px - var(--reserve));
+  --sheet-max-h:calc(var(--stage-h) - 30px);
+}
+@supports (height:100svh){.letter-page{height:100svh;--stage-h:calc(100svh - 58px - var(--reserve))}}
+.letter-page .bg-dance-video{max-width:none;pointer-events:none}
+.letter-page .top{position:relative;z-index:10;text-shadow:0 1px 12px #000}
+.letter-page .footer{z-index:9;pointer-events:none;background:linear-gradient(transparent,rgba(5,4,8,.82))}
+
+.letter-page .letter-stage{
+  overflow-x:clip;                                   /* ничто (ореол, тени, перо клапана) не расширяет страницу на телефоне */
+  position:relative;z-index:10;width:100%;max-width:none;margin:0;padding:0;min-height:0;
+  height:var(--stage-h);display:grid;place-items:center;
+}
+.letter-page #letterParticles{position:fixed;inset:0;width:100%;height:100%;z-index:11;display:block;pointer-events:none}
+
+/* ---- кнопка ---- */
+.gate{grid-area:1/1;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 18px}
+.gate .eyebrow,.gate .ornament,.gate .gate-hint{text-shadow:0 2px 18px rgba(0,0,0,.85);animation:landingTextIn .85s ease both}
+.gate .ornament{animation-delay:.18s;margin:14px 0 22px}
+.gate .gate-hint{animation-delay:.5s;margin:18px 0 0;font-size:12px;color:#e6d9e6}
+.letter-page .open-btn{font-size:14px;padding:18px 30px}
+.letter-page .open-btn:disabled{cursor:default}
+
+/* ---- сцена с конвертом ---- */
+.scene{grid-area:1/1;position:relative;z-index:3;width:var(--ew);height:var(--eh);perspective:1400px;pointer-events:none}
+.js .scene:not(.is-on){visibility:hidden}
+.scene.is-read .sheet{pointer-events:auto}
+.rig{position:absolute;inset:0;z-index:1;perspective:900px}
+.letter-halo{position:absolute;left:50%;top:50%;z-index:0;width:min(calc(var(--sw)*1.6),100vw);height:calc(var(--sheet-max-h)*1.2);
+  transform:translate(-50%,-50%);opacity:0;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(255,196,140,.32),rgba(232,140,190,.13) 46%,transparent 72%)}
+
+/* слои конверта: back 1 → открытый клапан 2 → письмо 3 → передний карман 4 → закрытый клапан 5 → письмо над всем 6 */
+.env-part{position:absolute;pointer-events:none}
+.env-back,.env-front{inset:0}
+.env-back{z-index:1;filter:drop-shadow(0 16px 26px rgba(0,0,0,.55))}
+.env-front{z-index:4}
+.env-back svg,.env-front svg,.flap-face svg{display:block;width:100%;height:100%}
+.env-glow{z-index:1;left:12%;top:8%;width:76%;height:70%;opacity:0;mix-blend-mode:screen;
+  background:radial-gradient(ellipse at 50% 55%,rgba(255,214,150,.85),rgba(255,170,120,.30) 45%,transparent 72%)}
+.env-flap{z-index:5;left:0;top:0;width:100%;height:59.4%;transform-origin:50% 0}
+.env-flap.is-open{z-index:2}
+.flap-face{position:absolute;inset:0}
+.flap-face svg{filter:drop-shadow(0 3px 5px rgba(0,0,0,.45))}
+.flap-in{display:none}
+.env-flap.is-open .flap-out{display:none}
+.env-flap.is-open .flap-in{display:block}
+.seal{position:absolute;left:50%;top:84%;width:calc(var(--ew)*.135);aspect-ratio:1;transform:translate(-50%,-50%)}
+.seal svg{display:block;width:100%;height:100%;filter:drop-shadow(0 3px 5px rgba(0,0,0,.6))}
+.env-shadow{z-index:0;left:6%;right:6%;bottom:-11%;height:17%;opacity:.7;filter:blur(12px);
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.72),transparent 70%)}
+
+/* ---- лист письма ---- */
+.sheet{position:absolute;left:50%;top:0;z-index:3;width:var(--sw);transform-origin:50% 0;
+  filter:drop-shadow(0 18px 32px rgba(0,0,0,.55)) drop-shadow(0 0 24px rgba(255,205,140,.16))}
+.sheet-paper{
+  position:relative;max-height:var(--sheet-max-h);overflow-x:hidden;overflow-y:auto;
+  padding:clamp(26px,5.4vw,52px) clamp(22px,5.8vw,54px);
+  border-radius:4px;color:#3d2230;scrollbar-width:thin;scrollbar-color:rgba(150,100,60,.4) transparent;
+  background:
+    radial-gradient(ellipse at 18% 0,rgba(255,255,255,.55),transparent 55%),
+    radial-gradient(ellipse at 100% 100%,rgba(190,140,90,.24),transparent 55%),
+    linear-gradient(172deg,#fcf1de,#f4e2c6 58%,#ebd3ae);
+  box-shadow:inset 0 0 0 1px rgba(160,110,60,.28),inset 0 0 46px rgba(150,100,50,.20);
+}
+.sheet-creases{position:absolute;left:0;right:0;top:0;height:100%;pointer-events:none;z-index:2;mix-blend-mode:multiply;
+  background:
+    linear-gradient(180deg,transparent calc(33.3% - 14px),rgba(110,70,40,.16) 33.3%,transparent calc(33.3% + 14px)),
+    linear-gradient(180deg,transparent calc(66.6% - 14px),rgba(110,70,40,.16) 66.6%,transparent calc(66.6% + 14px))}
+.letter-text{position:relative;z-index:1;text-align:left}
+.l-heart,.l-orn{text-align:center;color:#b3844a}
+.l-heart{font-size:24px;line-height:1;margin-bottom:8px}
+.l-orn{font-size:14px;letter-spacing:10px;margin:14px 0 20px;padding-left:10px}
+.letter-text h2{margin:0;text-align:center;font:normal clamp(25px,5.4vw,40px)/1.14 Georgia,'Times New Roman',serif;color:#4e1228}
+.letter-text h2 em{color:#a32b53;font-style:italic}
+.letter-text p{margin:0 0 1.05em;font:clamp(15px,2.3vw,18.5px)/1.85 Georgia,'Times New Roman',serif;color:#3d2230;text-wrap:pretty}
+.letter-text p:last-child{margin-bottom:0}
+.letter-text .w{display:inline-block}
+.js .letter-text:not(.is-shown) .w,
+.js .letter-text:not(.is-shown) [data-deco]{opacity:0}
+
+/* ---- нижние кнопки ---- */
+.letter-actions{position:fixed;left:0;right:0;bottom:46px;z-index:12;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;padding:0 14px;pointer-events:none}
+.letter-actions>*{pointer-events:auto}
+.letter-actions .btn{margin:0;padding:11px 18px;font-size:12px;gap:12px}
+.letter-actions .ghost{background:rgba(10,6,14,.46);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.letter-actions .ghost:disabled{opacity:.55;cursor:default}
+.js .letter-actions .after{display:none}
+.js .letter-actions.is-ready .after{display:inline-flex;animation:letterActionIn .9s ease both}
+@keyframes letterActionIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* без JavaScript: просто показываем письмо */
+html:not(.js) .gate,html:not(.js) .env-part,html:not(.js) .letter-halo{display:none}
+html:not(.js) .scene{width:auto;height:auto;margin:0 auto}
+html:not(.js) .rig{position:static}
+html:not(.js) .sheet{position:relative;left:auto;transform:none;margin:0 auto}
+
+@media(max-width:640px){
+  .letter-page{--reserve:156px}
+  .letter-actions{bottom:44px;gap:8px}
+  .letter-actions .btn{padding:10px 14px;font-size:11px;gap:8px}
+  .letter-page .open-btn{font-size:13px;padding:16px 24px}
+}
+@media(max-height:560px){
+  .letter-page{--reserve:104px}.letter-actions{bottom:40px}.gate .ornament{margin:6px 0 12px}
+  .sheet-paper{padding:16px 28px}
+  .letter-text h2{font-size:clamp(20px,6.4vh,28px)}
+  .letter-text p{font-size:14px;line-height:1.6;margin-bottom:.7em}
+  .l-heart,.l-orn{display:none}
+}
+
+
+/* ==========================================================================
+   Final page (final.html): вместо квадратной рамки — сердце.
+   Контур рисуется одной линией (stroke-dashoffset), заливка проявляется следом
+   (маска — толстая линия по тому же контуру), в конце сердце закрашено целиком.
+   Размеры текста — в cqw (от ширины сердца), поэтому всё масштабируется вместе с ним.
+   ========================================================================== */
+.final-page{
+  --ar:.9;                                   /* высота сердца / ширина */
+  --draw:3.4s;                               /* длительность прорисовки линии */
+  --ease:cubic-bezier(.45,.05,.3,1);
+  overflow-x:hidden;
+}
+.final-page main{width:100%;max-width:none;min-height:0;display:block;padding:2px 0 70px;text-align:center}
+.final-page .footer{pointer-events:none}
+
+.heart-stage{
+  position:relative;margin:0 auto;container-type:inline-size;
+  aspect-ratio:10/9;
+  width:min(820px,100vw,max(440px,calc((100vh - 200px)/var(--ar))));
+}
+@supports (height:100svh){
+  .heart-stage{width:min(820px,100vw,max(440px,calc((100svh - 200px)/var(--ar))))}
+}
+.heart-svg{
+  position:absolute;inset:0;width:100%;height:100%;overflow:visible;display:block;
+  animation:heartGlow 2.6s ease-out 1.2s both, heartBreath 4.2s ease-in-out 5s infinite;
+}
+@keyframes heartGlow{
+  from{filter:drop-shadow(0 0 0 rgba(222,60,105,0))}
+  to{filter:drop-shadow(0 0 3.2cqw rgba(222,60,105,.50)) drop-shadow(0 0 .8cqw rgba(255,150,170,.25))}
+}
+@keyframes heartBreath{
+  0%,100%{filter:drop-shadow(0 0 3.2cqw rgba(222,60,105,.50)) drop-shadow(0 0 .8cqw rgba(255,150,170,.25))}
+  50%{filter:drop-shadow(0 0 4.4cqw rgba(235,80,120,.66)) drop-shadow(0 0 1cqw rgba(255,170,185,.34))}
+}
+
+/* контур: одна непрерывная линия, начинается с нуля (ничего не видно) */
+.heart-line{
+  stroke-dasharray:1 1;stroke-dashoffset:1;opacity:0;
+  animation:
+    heartDraw var(--draw) var(--ease) .25s forwards,
+    heartLineIn .3s linear .25s forwards,
+    heartLineSettle 1.6s ease 3.7s forwards;
+  filter:drop-shadow(0 0 1.4px rgba(255,214,160,.9));
+}
+@keyframes heartDraw{to{stroke-dashoffset:0}}
+@keyframes heartLineIn{to{opacity:1}}
+@keyframes heartLineSettle{to{opacity:.55}}
+
+/* маска заливки: толстая линия по тому же пути, чуть позже основной */
+.heart-reveal{stroke-dasharray:1 1;stroke-dashoffset:1;animation:heartDraw var(--draw) var(--ease) .75s forwards}
+/* пока маска не проявилась — заливки нет вовсе */
+.heart-body{opacity:1}
+
+/* «перо»: светящаяся точка бежит по контуру вместе с линией */
+.heart-pen{opacity:0;display:none}
+@supports (offset-path:path('M0 0')){
+  .heart-pen{
+    display:block;
+    offset-path:path('M100 172 C40 128 6 92 6 54 C6 24 28 6 54 6 C74 6 92 17 100 36 C108 17 126 6 146 6 C172 6 194 24 194 54 C194 92 160 128 100 172 Z');
+    offset-rotate:0deg;offset-distance:0%;
+    filter:drop-shadow(0 0 3px #ffd9a0) drop-shadow(0 0 7px rgba(255,170,120,.9));
+    animation:heartPen var(--draw) var(--ease) .25s forwards;
+  }
+}
+@keyframes heartPen{
+  0%{offset-distance:0%;opacity:1}
+  96%{opacity:1}
+  100%{offset-distance:100%;opacity:0}
+}
+
+/* содержимое внутри сердца */
+.heart-content{
+  position:absolute;left:50%;top:19%;bottom:22%;width:68%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;
+  text-shadow:0 1px 10px rgba(60,0,20,.55);
+}
+.heart-content>*{opacity:0;animation:heartTextIn 1s ease both}
+.heart-content .eyebrow{animation-delay:3.1s}
+.heart-content .flower{animation-delay:3.3s}
+.heart-content h2{animation-delay:3.5s}
+.heart-content>.copy:not(#reply){animation-delay:3.8s}
+.heart-content .btn{animation-delay:4.1s}
+.heart-content #reply{animation:none;opacity:1}
+@keyframes heartTextIn{from{opacity:0;transform:translateY(10px);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+
+.heart-content .eyebrow{font-size:max(9px,1.6cqw);letter-spacing:.34em;color:#ffdca4}
+.heart-content .flower{font-size:max(20px,4.4cqw);line-height:1;margin:1cqw 0 .4cqw;color:#ffdca4}
+.heart-content h2{font-size:max(26px,7.4cqw);line-height:1.04;margin:.6cqw 0 1.4cqw;color:#fff6eb}
+.heart-content h2 em{color:#ffd98f}
+.heart-content .copy{font-size:max(12.5px,2.2cqw);line-height:1.6;color:#fbe6ec;max-width:100%;margin:0 auto 2cqw}
+.heart-content .btn{font-size:max(11.5px,1.8cqw);padding:max(11px,1.5cqw) max(18px,2.8cqw);gap:max(10px,1.6cqw);margin:0;text-shadow:none;box-shadow:0 4px 22px rgba(30,0,10,.35)}
+.heart-content #reply{margin:2cqw auto 0;font-size:max(12px,2.1cqw);animation:replyIn .7s ease both}
+@keyframes replyIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* навигация — под острием сердца, появляется, когда сердце готово */
+.heart-nav{position:relative;z-index:3;margin:clamp(6px,1.6vw,18px) 0 0;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+  opacity:0;animation:heartTextIn 1s ease 4.4s both}
+.heart-nav .btn{margin:0}
+
+@media(max-width:640px){
+  .final-page{--ar:1.4}
+  .heart-stage{aspect-ratio:5/7;width:100vw}
+  .heart-content{top:22%;bottom:19%;width:66%}
+  .heart-content .flower{display:none}
+  .heart-content h2{font-size:clamp(25px,8.2cqw,34px);margin:1.4cqw 0 3cqw}
+  .heart-content .copy{font-size:clamp(12.5px,3.3cqw,15px);line-height:1.5;margin-bottom:3.4cqw}
+  .heart-content .eyebrow{font-size:10px}
+  .heart-content .btn{font-size:12px;padding:11px 18px;gap:10px}
+  .heart-content #reply{font-size:clamp(12px,3.2cqw,14px);margin-top:3cqw}
+}
+@media(prefers-reduced-motion:reduce){
+  .final-page .heart-svg,.final-page .heart-line,.final-page .heart-reveal,.final-page .heart-pen,
+  .final-page .heart-content>*,.final-page .heart-nav{animation-delay:0s!important;animation-iteration-count:1!important}
+}

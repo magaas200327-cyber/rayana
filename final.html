@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>С днём рождения ✦</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext x=%2750%27 y=%2778%27 font-size=%2780%27 text-anchor=%27middle%27 fill=%27%23e8c27a%27%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="final-page">
+<header class="top"><a class="brand" href="index.html">✦ ONLY FOR YOU</a></header>
+
+<main>
+  <!-- Сердце вместо рамки: контур рисуется одной линией, а заливка следует за ней (всё — SVG, анимация в style.css) -->
+  <section class="heart-stage" id="heartStage">
+    <svg class="heart-svg" viewBox="0 0 200 180" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="heartFillGrad" x1=".2" y1="0" x2=".75" y2="1">
+          <stop offset="0" stop-color="#e2486f"/>
+          <stop offset=".42" stop-color="#b52049"/>
+          <stop offset=".8" stop-color="#7c1235"/>
+          <stop offset="1" stop-color="#4d0a22"/>
+        </linearGradient>
+        <radialGradient id="heartShine" cx=".34" cy=".24" r=".6">
+          <stop offset="0" stop-color="#ffd0d8" stop-opacity=".30"/>
+          <stop offset="1" stop-color="#ffd0d8" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="heartLineGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#ffe9cf"/>
+          <stop offset=".5" stop-color="#f3cf85"/>
+          <stop offset="1" stop-color="#ffd3c4"/>
+        </linearGradient>
+        <filter id="heartSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5"/></filter>
+        <!-- маска заливки: толстая линия по тому же контуру, «рисуется» вслед за основной линией -->
+        <mask id="heartRevealMask" maskUnits="userSpaceOnUse" x="-30" y="-30" width="260" height="240">
+          <path class="heart-reveal" pathLength="1" fill="none" stroke="#fff" stroke-width="170" stroke-linejoin="round"
+                filter="url(#heartSoft)"
+                d="M100 172 C40 128 6 92 6 54 C6 24 28 6 54 6 C74 6 92 17 100 36 C108 17 126 6 146 6 C172 6 194 24 194 54 C194 92 160 128 100 172 Z"/>
+        </mask>
+      </defs>
+
+      <g class="heart-body" id="heartFill" mask="url(#heartRevealMask)">
+        <path d="M100 172 C40 128 6 92 6 54 C6 24 28 6 54 6 C74 6 92 17 100 36 C108 17 126 6 146 6 C172 6 194 24 194 54 C194 92 160 128 100 172 Z" fill="url(#heartFillGrad)"/>
+        <path d="M100 172 C40 128 6 92 6 54 C6 24 28 6 54 6 C74 6 92 17 100 36 C108 17 126 6 146 6 C172 6 194 24 194 54 C194 92 160 128 100 172 Z" fill="url(#heartShine)"/>
+      </g>
+
+      <path class="heart-line" pathLength="1" fill="none" stroke="url(#heartLineGrad)" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"
+            d="M100 172 C40 128 6 92 6 54 C6 24 28 6 54 6 C74 6 92 17 100 36 C108 17 126 6 146 6 C172 6 194 24 194 54 C194 92 160 128 100 172 Z"/>
+      <circle class="heart-pen" r="2.4" cx="0" cy="0" fill="#fff4dc"/>
+    </svg>
+
+    <div class="heart-content">
+      <div class="eyebrow">И последнее...</div>
+      <div class="flower">✧</div>
+      <h2>С днём<br><em>рождения!</em></h2>
+      <p class="copy">Пусть этот день будет красивым, душа — спокойной, а впереди ждёт много хорошего. Желаю тебе искренних улыбок, тепла и счастливых мгновений.</p>
+      <button class="btn" id="wow">Нажми, если улыбнулась <span>♡</span></button>
+      <p id="reply" class="copy" hidden>Тогда сюрприз удался ✨ Пусть улыбка сегодня не исчезает!</p>
+    </div>
+  </section>
+
+  <p class="heart-nav">
+    <a class="btn ghost" href="message.html">← Назад</a>
+    <a class="btn ghost" href="index.html">В начало ↻</a>
+  </p>
+</main>
+<div class="footer">THE END? · MAYBE JUST THE BEGINNING</div>
+
+<script>
+document.getElementById('wow').addEventListener('click',()=>{document.getElementById('reply').hidden=false;for(let i=0;i<32;i++){const e=document.createElement('span');e.textContent=['✦','♡','✧'][i%3];e.style.cssText=`position:fixed;left:${Math.random()*100}vw;top:-30px;color:#e8c27a;font-size:${16+Math.random()*22}px;z-index:5;pointer-events:none;transition:transform 2.5s linear,opacity 2.5s linear`;document.body.appendChild(e);requestAnimationFrame(()=>{e.style.transform=`translateY(${innerHeight+70}px) rotate(${Math.random()*500}deg)`;e.style.opacity='0'});setTimeout(()=>e.remove(),2600)}});
+
+/* Когда заливка дошла до конца, снимаем маску: сердце гарантированно закрашено целиком, без пустых участков */
+(() => {
+  const fill = document.getElementById('heartFill');
+  const reveal = document.querySelector('.heart-reveal');
+  const done = () => fill && fill.removeAttribute('mask');
+  if (reveal) reveal.addEventListener('animationend', done, { once: true });
+  setTimeout(done, 7500);   // страховка, если анимация не запустилась
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050408">
+<title>Несколько слов ✦</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext x=%2750%27 y=%2778%27 font-size=%2780%27 text-anchor=%27middle%27 fill=%27%23e8c27a%27%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script>document.documentElement.classList.add('js','js-intro');</script>
+</head>
+<body class="page-enter letter-page">
+<!-- Слои снизу вверх: видео (z -3) → затемнение (z -2) → содержимое (z 10) → канвас частиц (z 11) → кнопки навигации (z 12) -->
+<video id="bgDance" class="bg-dance-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+  <source src="media/dance.mp4" type="video/mp4">
+</video>
+<div class="bg-vignette" aria-hidden="true"></div>
+<canvas id="letterParticles" aria-hidden="true"></canvas>
+<div class="transition-curtain" aria-hidden="true"><span>✦</span></div>
+
+<header class="top"><a class="brand" href="index.html">✦ ONLY FOR YOU</a></header>
+
+<main class="letter-stage">
+
+  <!-- Шаг 1: кнопка, которая проявляется из светящихся частиц -->
+  <section class="gate" id="gate">
+    <div class="eyebrow">А теперь — от сердца</div>
+    <div class="ornament">♡</div>
+    <button type="button" class="btn open-btn" id="openLetter">Открыть моё письмо <span>♡</span></button>
+    <p class="hint gate-hint">Нажми — и письмо откроется.</p>
+  </section>
+
+  <!-- Шаг 2: конверт и письмо (всё — обычные HTML/SVG-элементы, анимируются из letter.js) -->
+  <section class="scene" id="scene" aria-label="Письмо">
+    <div class="letter-halo" id="letterHalo" aria-hidden="true"></div>
+    <div class="rig" id="rig">
+
+      <div class="env-part env-back" id="envBack" aria-hidden="true">
+        <svg viewBox="0 0 440 300" preserveAspectRatio="none"><defs>
+          <linearGradient id="gBack" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a0613"/><stop offset="1" stop-color="#4b1023"/></linearGradient>
+        </defs><rect width="440" height="300" rx="8" fill="url(#gBack)"/></svg>
+      </div>
+
+      <div class="env-part env-glow" id="envGlow" aria-hidden="true"></div>
+
+      <div class="env-part env-flap" id="envFlap" aria-hidden="true">
+        <div class="flap-face flap-out">
+          <svg viewBox="0 0 440 178" preserveAspectRatio="none"><defs>
+            <linearGradient id="gFlap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a02649"/><stop offset=".55" stop-color="#78173b"/><stop offset="1" stop-color="#5a0f27"/></linearGradient>
+            <linearGradient id="gFlapGloss" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          </defs>
+            <polygon points="0,0 440,0 220,178" fill="url(#gFlap)" stroke="rgba(232,194,122,.45)" stroke-width="1.3" stroke-linejoin="round"/>
+            <polygon points="0,0 440,0 220,178" fill="url(#gFlapGloss)"/>
+            <polygon points="16,6 424,6 220,162" fill="none" stroke="rgba(232,194,122,.26)" stroke-width="1" stroke-linejoin="round"/>
+          </svg>
+          <!-- сургучная печать с сердцем -->
+          <div class="seal" id="envSeal">
+            <svg viewBox="-40 -40 80 80"><defs>
+              <radialGradient id="gWax" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#e8465f"/><stop offset=".55" stop-color="#b3182f"/><stop offset="1" stop-color="#6e0a1f"/></radialGradient>
+              <linearGradient id="gHeart" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6b4a8"/><stop offset=".5" stop-color="#d9566b"/><stop offset="1" stop-color="#9c1a38"/></linearGradient>
+            </defs>
+              <path d="M32.40,0.00 L32.48,1.46 L31.92,2.87 L31.11,4.21 L30.39,5.51 L29.86,6.81 L29.39,8.11 L28.79,9.36 L27.99,10.50 L27.07,11.57 L26.23,12.63 L25.57,13.76 L25.04,14.96 L24.43,16.13 L23.55,17.11 L22.41,17.87 L21.20,18.52 L20.24,19.35 L19.72,20.62 L19.57,22.40 L19.50,24.46 L19.15,26.36 L18.26,27.66 L16.85,28.20 L15.13,28.11 L13.38,27.79 L11.80,27.60 L10.40,27.71 L9.11,28.02 L7.82,28.32 L6.49,28.45 L5.16,28.42 L3.85,28.43 L2.57,28.61 L1.30,28.96 L0.00,29.30 L-1.32,29.40 L-2.63,29.18 L-3.90,28.82 L-5.20,28.67 L-6.61,28.97 L-8.20,29.72 L-9.93,30.55 L-11.62,30.96 L-13.05,30.54 L-14.09,29.25 L-14.76,27.42 L-15.26,25.55 L-15.86,24.03 L-16.70,22.99 L-17.77,22.28 L-18.90,21.63 L-19.93,20.85 L-20.84,19.92 L-21.70,18.96 L-22.66,18.07 L-23.76,17.27 L-24.89,16.43 L-25.87,15.46 L-26.59,14.31 L-27.12,13.06 L-27.73,11.85 L-28.64,10.75 L-29.88,9.71 L-31.16,8.60 L-32.01,7.31 L-32.05,5.82 L-31.21,4.23 L-29.82,2.68 L-28.45,1.28 L-27.60,0.00 L-27.46,-1.23 L-27.84,-2.51 L-28.35,-3.84 L-28.65,-5.20 L-28.64,-6.54 L-28.45,-7.85 L-28.27,-9.19 L-28.19,-10.58 L-28.10,-12.01 L-27.83,-13.40 L-27.26,-14.67 L-26.46,-15.81 L-25.64,-16.93 L-24.99,-18.15 L-24.50,-19.54 L-23.98,-20.95 L-23.13,-22.11 L-21.75,-22.75 L-19.91,-22.78 L-17.90,-22.45 L-16.12,-22.19 L-14.79,-22.41 L-13.93,-23.31 L-13.30,-24.72 L-12.65,-26.27 L-11.79,-27.57 L-10.68,-28.47 L-9.44,-29.04 L-8.15,-29.51 L-6.86,-30.05 L-5.56,-30.61 L-4.20,-31.03 L-2.80,-31.15 L-1.39,-30.98 L-0.00,-30.70 L1.37,-30.54 L2.75,-30.58 L4.15,-30.63 L5.51,-30.37 L6.74,-29.52 L7.76,-28.12 L8.61,-26.51 L9.46,-25.22 L10.53,-24.63 L11.95,-24.80 L13.67,-25.41 L15.51,-25.96 L17.19,-26.05 L18.57,-25.55 L19.64,-24.63 L20.58,-23.56 L21.53,-22.52 L22.53,-21.54 L23.48,-20.52 L24.25,-19.34 L24.78,-18.00 L25.18,-16.62 L25.64,-15.32 L26.25,-14.13 L26.93,-12.97 L27.44,-11.73 L27.53,-10.33 L27.19,-8.83 L26.68,-7.36 L26.48,-6.04 L26.99,-4.90 L28.25,-3.83 L29.94,-2.69 L31.49,-1.41 Z" fill="url(#gWax)"/>
+              <circle r="23" fill="none" stroke="rgba(255,205,190,.35)" stroke-width="1.3"/>
+              <circle r="24.6" fill="none" stroke="rgba(60,0,12,.45)" stroke-width="1"/>
+              <path d="M0,13 C-19,-1 -15,-17 -6.5,-15 C-2.6,-14 0,-10 0,-7.5 C0,-10 2.6,-14 6.5,-15 C15,-17 19,-1 0,13 Z" fill="url(#gHeart)" stroke="rgba(70,0,16,.55)" stroke-width="1"/>
+              <path d="M-9,-10 C-12,-6 -11,-3 -8,0" fill="none" stroke="rgba(255,240,230,.55)" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="flap-face flap-in">
+          <svg viewBox="0 0 440 178" preserveAspectRatio="none"><defs>
+            <linearGradient id="gFlapIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7a6a0"/><stop offset="1" stop-color="#ecd0c4"/></linearGradient>
+            <pattern id="pLiner" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="12" stroke="rgba(122,30,60,.13)" stroke-width="1"/></pattern>
+          </defs>
+            <polygon points="0,0 440,0 220,178" fill="url(#gFlapIn)" stroke="rgba(232,194,122,.45)" stroke-width="1.2" stroke-linejoin="round"/>
+            <polygon points="0,0 440,0 220,178" fill="url(#pLiner)"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ===== ПИСЬМО. Лежит между задней стенкой и передним карманом конверта ===== -->
+      <div class="sheet" id="sheet">
+        <div class="sheet-paper" id="sheetPaper">
+          <div class="sheet-creases" aria-hidden="true"></div>
+          <!-- ТЕКСТ ПИСЬМА: перенесён из прежней message.html без изменений. Меняйте текст только здесь. -->
+          <article class="letter-text" id="letterText">
+            <div class="l-heart" data-deco aria-hidden="true">♡</div>
+            <h2 data-rv>Есть вещи,<br>которые хочется <em>сказать.</em></h2>
+            <div class="l-orn" data-deco aria-hidden="true">✦</div>
+            <p data-rv>Пусть в твоей жизни будет больше поводов улыбаться, рядом будут искренние люди, а каждый новый год приносит спокойствие, радость и исполнение добрых желаний.</p>
+            <p data-rv>Пусть этот маленький сюрприз напомнит тебе, что ты заслуживаешь самого тёплого отношения и самых светлых моментов.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="env-part env-front" id="envFront" aria-hidden="true">
+        <svg viewBox="0 0 440 300" preserveAspectRatio="none"><defs>
+          <linearGradient id="gPL" x1="0" y1="0" x2="1" y2=".7"><stop offset="0" stop-color="#7d1937"/><stop offset="1" stop-color="#58102a"/></linearGradient>
+          <linearGradient id="gPR" x1="1" y1="0" x2="0" y2=".7"><stop offset="0" stop-color="#6f1332"/><stop offset="1" stop-color="#4d0b22"/></linearGradient>
+          <linearGradient id="gPB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#93244a"/><stop offset="1" stop-color="#60102b"/></linearGradient>
+          <linearGradient id="gPGloss" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".13"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <clipPath id="cFront"><rect width="440" height="300" rx="8"/></clipPath>
+        </defs>
+          <g clip-path="url(#cFront)">
+            <polygon points="0,0 220,165 0,300" fill="url(#gPL)"/>
+            <polygon points="440,0 440,300 220,165" fill="url(#gPR)"/>
+            <polygon points="0,300 220,165 440,300" fill="url(#gPB)"/>
+            <polygon points="0,300 220,165 440,300" fill="url(#gPGloss)"/>
+            <path d="M0 300 L220 165 L440 300" fill="none" stroke="rgba(255,222,200,.22)" stroke-width="1.2"/>
+            <path d="M0 0 L220 165 L0 300" fill="none" stroke="rgba(0,0,0,.20)" stroke-width="1"/>
+            <path d="M440 0 L220 165 L440 300" fill="none" stroke="rgba(0,0,0,.20)" stroke-width="1"/>
+          </g>
+          <rect x=".6" y=".6" width="438.8" height="298.8" rx="8" fill="none" stroke="rgba(232,194,122,.38)" stroke-width="1.2"/>
+        </svg>
+      </div>
+
+      <div class="env-part env-shadow" id="envShadow" aria-hidden="true"></div>
+    </div>
+  </section>
+</main>
+
+<nav class="letter-actions" id="letterActions" aria-label="Навигация">
+  <a class="btn ghost" href="index.html">← Назад</a>
+  <button type="button" class="btn ghost after" id="again" disabled>Читать ещё раз <span>↻</span></button>
+  <a class="btn after" href="final.html">Остался последний шаг <span>↗</span></a>
+</nav>
+<div class="footer">WITH WARMTH · ALWAYS</div>
+
+<script src="video-sync.js"></script>
+<script src="letter.js"></script>
+</body>
+</html>

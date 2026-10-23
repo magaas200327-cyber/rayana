@@ -1,0 +1,44 @@
+/* ==========================================================================
+   Вступительная заставка «Eye of Creation» (intro/eye-of-creation.js).
+   Пока на <html> стоит класс eoc-active, виден только экран заставки,
+   а прежняя главная страница целиком скрыта (display:none) — поэтому её собственные
+   CSS-анимации, видео и частицы начнутся с самого начала, когда заставка закончится.
+   Все классы заставки начинаются с eoc- и не пересекаются со стилями сайта.
+   ========================================================================== */
+html.eoc-active,
+html.eoc-active body{overflow:hidden!important}
+html.eoc-active body>:not(.eoc-intro){display:none!important}
+
+.eoc-intro{
+  position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483000;
+  background:#000;overflow:hidden;cursor:default;
+  touch-action:none;                      /* палец «ведёт» взгляд, а не прокручивает/обновляет страницу */
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.eoc-canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+
+/* HUD и справка — как в оригинальной программе (шрифт 14px, те же цвета и отступы) */
+.eoc-hud,
+.eoc-help{
+  font:14px/1.2 Consolas,"DejaVu Sans Mono",Menlo,"Courier New","Liberation Mono",monospace;
+  white-space:pre;pointer-events:none;letter-spacing:0;text-shadow:none;text-align:left;
+}
+.eoc-hud[hidden],.eoc-help[hidden]{display:none}
+.eoc-hud-worlds{position:absolute;left:14px;top:10px;right:0;overflow:hidden}
+.eoc-hud-worlds span{display:inline-block;margin-right:14px;color:rgb(90,90,110)}
+.eoc-hud-worlds span.is-on{color:rgb(255,210,120)}
+.eoc-hud-info{position:absolute;left:14px;right:0;top:calc(100% - 24px);overflow:hidden;color:rgb(120,140,170)}
+.eoc-help{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  box-sizing:border-box;width:560px;max-width:calc(100% - 16px);
+  padding:10px 0 10px 14px;line-height:22px;overflow:hidden;
+  background:rgba(0,0,0,.784);color:rgb(220,220,230);
+}
+@media (max-width:600px){
+  .eoc-hud,.eoc-help{font-size:11px}
+  .eoc-hud-worlds{left:10px}
+  .eoc-hud-worlds span{margin-right:8px}
+  .eoc-hud-info{left:10px}
+  .eoc-help{line-height:18px}
+}

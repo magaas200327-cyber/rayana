@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050408">
+  <title>Только для тебя ✦</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext x=%2750%27 y=%2778%27 font-size=%2780%27 text-anchor=%27middle%27 fill=%27%23e8c27a%27%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <!-- Вступительная заставка «Eye of Creation» (папка intro/): при открытии сайта показывается первой,
+       после её завершения плавно открывается эта главная страница -->
+  <link rel="stylesheet" href="intro/eye-of-creation.css">
+  <script src="intro/intro-gate.js"></script>
+  <script src="intro/eye-of-creation.js" defer></script>
+  <script>document.documentElement.classList.add('js-intro');</script>
+</head>
+<body class="page-enter landing-page">
+  <!-- Фоновое видео, строго отдельный слой позади содержимого страницы -->
+  <video class="bg-dance-video landing-bg-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+    <source src="media/dance.mp4" type="video/mp4">
+  </video>
+  <div class="landing-video-shade" aria-hidden="true"></div>
+  <canvas id="introParticles" aria-hidden="true"></canvas>
+  <div class="transition-curtain" aria-hidden="true"><span>✦</span></div>
+
+  <header class="top">
+    <a class="brand" href="index.html">✦ ONLY FOR YOU</a>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="eyebrow">У меня для тебя кое-что особенное</div>
+      <div class="ornament">✦</div>
+      <h1>Сегодня мир<br>чуть <em>прекраснее.</em></h1>
+      <p class="copy">Я приготовил для тебя небольшой сюрприз. Просто нажми на кнопку и не торопись — впереди несколько особенных мгновений.</p>
+      <a class="btn start-btn" id="startStory" href="message.html">Открыть мой сюрприз <span>↗</span></a>
+      <p class="hint landing-hint">Нажми — и история плавно продолжится.</p>
+    </section>
+  </main>
+  <div class="footer">MADE WITH CARE · JUST FOR YOU</div>
+
+  <script>
+  (() => {
+    'use strict';
+
+    // true  -> respect the OS "reduce motion" setting (the intro is skipped for those users)
+    // false -> always play the intro (this is a one-time decorative greeting)
+    const RESPECT_REDUCED_MOTION = false;
+
+    const root = document.documentElement;
+    const body = document.body;
+    const video = document.querySelector('.landing-bg-video');
+    const canvas = document.getElementById('introParticles');
+    const button = document.getElementById('startStory');
+
+    const showButtonNow = () => {
+      if (button) button.classList.add('is-visible');
+      root.classList.remove('js-intro');
+    };
+    if (!canvas || !button) { showButtonNow(); return; }
+
+    /* ---------- background video: make sure it really plays ---------- */
+    if (video) {
+      video.muted = true; video.defaultMuted = true; video.playsInline = true;
+      const tryPlay = () => { const p = video.play(); if (p && p.catch) p.catch(() => {}); };
+      tryPlay();
+      video.addEventListener('loadeddata', tryPlay);
+      ['pointerdown', 'keydown', 'touchstart'].forEach(t =>
+        window.addEventListener(t, tryPlay, { once: true, passive: true }));
+    }
+
+    /* ---------- navigation (real <a>, only usable once it has been revealed) ---------- */
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (!button.classList.contains('is-visible') || body.classList.contains('page-leaving')) return;
+      body.classList.add('page-leaving');
+      window.setTimeout(() => { window.location.href = button.href; }, 720);
+    });
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx || (RESPECT_REDUCED_MOTION && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+      showButtonNow();
+      return;
+    }
+
+    /* ---------- timeline (ms) ---------- */
+    const TRAVEL_MS = 2300;   // how long one particle flies to its place
+    const MAX_DELAY = 750;    // launch spread, so the cloud streams in instead of moving as one block
+    const TRACE_FROM = 500, TRACE_MS = 2300;   // the glowing contour is drawn between these moments
+    const REVEAL_AT = 3200;   // the real button appears
+    const FADE_MS = 1300;     // the canvas fades out after the reveal
+    const OUTLINE_PTS = 560, FILL_PTS = 260, PAD = 9;
+
+    const TAU = Math.PI * 2;
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const easeInOut = (p) => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+
+    /* soft glow sprites (much cheaper than shadowBlur for ~800 dots) */
+    const PALETTE = [[255, 224, 160], [255, 246, 220], [220, 174, 255], [255, 255, 255]];
+    const sprites = PALETTE.map(([r, g, b]) => {
+      const c = document.createElement('canvas'); c.width = c.height = 64;
+      const x = c.getContext('2d');
+      const grad = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, `rgba(${r},${g},${b},1)`);
+      grad.addColorStop(.16, `rgba(${r},${g},${b},.92)`);
+      grad.addColorStop(.42, `rgba(${r},${g},${b},.30)`);
+      grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+      x.fillStyle = grad; x.fillRect(0, 0, 64, 64);
+      return c;
+    });
+
+    let w = 0, h = 0, dpr = 1;
+    let particles = [], outline = [];
+    let raf = 0, fallbackTimer = 0, startedAt = 0, revealed = false, finished = false;
+
+    /* Button geometry from layout (offset*), NOT getBoundingClientRect: the hidden button is
+       scaled/translated by CSS, and its rect would then point to the wrong place. */
+    function measureButton() {
+      let x = 0, y = 0, el = button;
+      while (el) { x += el.offsetLeft; y += el.offsetTop; el = el.offsetParent; }
+      return { left: x - window.scrollX, top: y - window.scrollY, width: button.offsetWidth, height: button.offsetHeight };
+    }
+
+    /* evenly spaced points on a pill-shaped contour that surrounds the button */
+    function makeOutline(rect, count) {
+      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+      const r = rect.height / 2 + PAD;
+      const half = Math.max(0, rect.width / 2 - rect.height / 2);
+      const straight = half * 2, arc = Math.PI * r, total = straight * 2 + arc * 2;
+      const pts = [];
+      for (let i = 0; i < count; i++) {
+        let s = (i / count) * total;
+        if (s < straight) { pts.push({ x: cx - half + s, y: cy - r }); continue; }
+        s -= straight;
+        if (s < arc) { const a = -Math.PI / 2 + s / r; pts.push({ x: cx + half + r * Math.cos(a), y: cy + r * Math.sin(a) }); continue; }
+        s -= arc;
+        if (s < straight) { pts.push({ x: cx + half - s, y: cy + r }); continue; }
+        s -= straight;
+        const a = Math.PI / 2 + s / r;
+        pts.push({ x: cx - half + r * Math.cos(a), y: cy + r * Math.sin(a) });
+      }
+      return pts;
+    }
+
+    function retarget() {
+      const rect = measureButton();
+      outline = makeOutline(rect, OUTLINE_PTS);
+      particles.forEach((p, i) => {
+        if (p.contour) { p.tx = outline[i % outline.length].x; p.ty = outline[i % outline.length].y; }
+        else {
+          // soft luminous cloud inside the button
+          p.tx = rect.left + p.fx * rect.width; p.ty = rect.top + p.fy * rect.height;
+        }
+      });
+    }
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = root.clientWidth || window.innerWidth;
+      h = root.clientHeight || window.innerHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      retarget();
+    }
+
+    function buildParticles() {
+      particles = [];
+      const total = OUTLINE_PTS + FILL_PTS;
+      for (let i = 0; i < total; i++) {
+        // most dots start somewhere on the screen (visible from the very first frame), some outside it
+        const outside = Math.random() < .3;
+        const sx = outside ? (Math.random() < .5 ? rand(-60, 0) : rand(w, w + 60)) : rand(0, w);
+        const sy = outside ? rand(-60, h + 60) : rand(0, h);
+        particles.push({
+          sx, sy, tx: 0, ty: 0,
+          contour: i < OUTLINE_PTS, fx: rand(.06, .94), fy: rand(.14, .86),
+          delay: rand(0, MAX_DELAY), size: rand(1.1, 2.4),
+          phase: rand(0, TAU), swirl: rand(30, 130), speed: rand(.0016, .0038),
+          // contour dots stay warm/golden; the inner cloud uses the whole palette
+          sprite: i < OUTLINE_PTS ? sprites[Math.random() < .62 ? 0 : 1] : sprites[Math.floor(Math.random() * sprites.length)],
+          twinkle: rand(.0045, .009)
+        });
+      }
+      retarget();
+    }
+
+    function draw(now) {
+      if (finished) return;
+      if (!startedAt) startedAt = now;
+      const elapsed = now - startedAt;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'lighter';
+
+      for (const p of particles) {
+        const t = clamp((elapsed - p.delay) / TRAVEL_MS, 0, 1);
+        const e = easeInOut(t);
+        const drift = (1 - e) * p.swirl;
+        const a = p.phase + now * p.speed;
+        const x = p.sx + (p.tx - p.sx) * e + Math.cos(a) * drift + (t >= 1 ? Math.cos(a * 3) * .7 : 0);
+        const y = p.sy + (p.ty - p.sy) * e + Math.sin(a) * drift + (t >= 1 ? Math.sin(a * 3) * .7 : 0);
+        const pulse = .72 + .28 * Math.sin(now * p.twinkle + p.phase);
+        let alpha = p.contour ? .30 + .42 * t : .85 * (1 - clamp((t - .7) / .3, 0, 1) * .9);
+        alpha *= pulse;
+        const s = p.size * (p.contour ? 2.9 : 3.4);
+        ctx.globalAlpha = clamp(alpha, 0, 1);
+        ctx.drawImage(p.sprite, x - s, y - s, s * 2, s * 2);
+      }
+
+      // luminous contour drawn around the button
+      const trace = clamp((elapsed - TRACE_FROM) / TRACE_MS, 0, 1);
+      const shown = Math.floor(outline.length * trace);
+      if (shown > 1) {
+        const closed = trace >= 1;
+        const glow = .75 + .25 * Math.sin(now * .006);
+        ctx.lineJoin = ctx.lineCap = 'round';
+        const path = () => {
+          ctx.beginPath(); ctx.moveTo(outline[0].x, outline[0].y);
+          for (let i = 1; i < shown; i++) ctx.lineTo(outline[i].x, outline[i].y);
+          if (closed) ctx.closePath();
+        };
+        path(); ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(243,207,133,.09)'; ctx.stroke();
+        path(); ctx.lineWidth = 3.4; ctx.strokeStyle = 'rgba(255,205,125,.20)'; ctx.stroke();
+        path(); ctx.lineWidth = 1.5; ctx.strokeStyle = `rgba(255,232,185,${.85 * glow})`; ctx.stroke();
+
+        // bright sparks running along the contour
+        for (let i = 0; i < 12; i++) {
+          const idx = Math.floor((elapsed * .16 + i * outline.length / 12) % shown);
+          const q = outline[idx];
+          ctx.globalAlpha = 1;
+          ctx.drawImage(sprites[1], q.x - 11, q.y - 11, 22, 22);
+        }
+      }
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+
+      if (!revealed && elapsed >= REVEAL_AT) reveal();
+      if (elapsed >= REVEAL_AT + FADE_MS) { finish(); return; }
+      raf = requestAnimationFrame(draw);
+    }
+
+    function reveal() {
+      if (revealed) return;
+      revealed = true;
+      button.classList.add('is-visible');   // the real button fades/scales in with a glow
+      canvas.classList.add('is-fading');    // particles dissolve while the loop keeps animating them
+    }
+
+    function finish() {
+      if (finished) return;
+      reveal();
+      finished = true;
+      cancelAnimationFrame(raf);
+      clearTimeout(fallbackTimer);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.classList.add('is-done');
+      root.classList.remove('js-intro');
+    }
+
+    /* (re)start: used on first load and when the page comes back from the back/forward cache */
+    function start() {
+      cancelAnimationFrame(raf); clearTimeout(fallbackTimer);
+      revealed = false; finished = false; startedAt = 0;
+      body.classList.remove('page-leaving');
+      button.classList.remove('is-visible');
+      canvas.classList.remove('is-fading', 'is-done');
+      root.classList.add('js-intro');
+      // backstop for very small windows: never run the intro on a button that is off-screen
+      const r0 = measureButton(), vh0 = root.clientHeight || window.innerHeight;
+      if (r0.top < 0 || r0.top + r0.height > vh0) button.scrollIntoView({ block: 'center', inline: 'nearest' });
+      resize();
+      buildParticles();
+      raf = requestAnimationFrame(draw);
+      // safety net (e.g. background tab where rAF is paused): the button must never stay hidden
+      fallbackTimer = window.setTimeout(finish, REVEAL_AT + FADE_MS + 1500);
+    }
+
+    window.addEventListener('resize', () => { if (!finished) resize(); }, { passive: true });
+    window.addEventListener('scroll', () => { if (!finished) retarget(); }, { passive: true });
+    window.addEventListener('load', () => { if (!finished) retarget(); });
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted && !(window.EyeIntro && window.EyeIntro.active)) start();
+    });
+
+    // Сначала идёт вступительная заставка (intro/), главная страница запускается после её завершения
+    if (window.EyeIntro && window.EyeIntro.active) window.EyeIntro.onFinish(start);
+    else start();
+  })();
+  </script>
+<script src="video-sync.js"></script>
+</body>
+</html>
