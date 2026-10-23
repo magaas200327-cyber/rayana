@@ -17,7 +17,7 @@ body{opacity:1;transition:opacity .55s ease,filter .55s ease;overflow-x:hidden}
 
 
 /* Full-screen dance background (shared by index.html and message.html) */
-.bg-dance-video{position:fixed;top:calc(50% + 6vh);left:50%;width:200%;height:200%;object-fit:cover;object-position:center;transform:translate(-50%,-50%);transform-origin:center center;z-index:-3;filter:brightness(.48) saturate(.78);}
+.bg-dance-video{position:fixed;top:calc(90% + 6vh);left:50%;width:200%;height:200%;object-fit:cover;object-position:center;transform:translate(-50%,-50%);transform-origin:center center;z-index:-3;filter:brightness(.48) saturate(.78);}
 .bg-vignette{position:fixed;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(90deg,rgba(9,6,13,.72),rgba(9,6,13,.22) 50%,rgba(9,6,13,.72)),linear-gradient(0deg,rgba(9,6,13,.75),transparent 45%,rgba(9,6,13,.45))}
 @media(max-width:600px){.bg-dance-video{object-position:center}}
 
